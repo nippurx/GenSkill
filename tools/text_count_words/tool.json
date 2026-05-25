@@ -1,0 +1,130 @@
+{
+  "id": "text_count_words",
+  "name": "text-count",
+  "version": "1.0.0",
+  "type": "bat",
+  "language": "batch_python",
+  "status": "experimental",
+  "risk_level": "low",
+  "category": "text",
+  "description": "Counts words, characters, and lines from a .txt file, a folder of .txt files, or text passed by parameter.",
+  "entrypoint": "text-count.bat",
+  "python_entrypoint": "text_count_words.py",
+  "created_by": "GenSkill",
+  "license": "MIT",
+  "usage": [
+    "text-count.bat archivo.txt",
+    "text-count.bat archivo.txt --json",
+    "text-count.bat --text \"hola mundo\"",
+    "text-count.bat --all examples"
+  ],
+  "inputs": {
+    "input_path": {
+      "type": "file_or_folder_or_text",
+      "required": true,
+      "description": "Input .txt file, folder of .txt files with --all, or text with --text."
+    }
+  },
+  "outputs": {
+    "stdout": {
+      "type": "text_or_json",
+      "description": "Word, character, and line counts printed to stdout."
+    }
+  },
+  "parameters": {
+    "--text": {
+      "type": "string",
+      "required": false,
+      "description": "Text to count directly from the command line."
+    },
+    "--all": {
+      "type": "string",
+      "required": false,
+      "description": "Count all .txt files in a folder. Defaults to current folder when no folder is provided."
+    },
+    "--recursive": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include subfolders when using --all."
+    },
+    "--encoding": {
+      "type": "string",
+      "default": "utf-8",
+      "description": "Encoding used to read file input."
+    },
+    "--json": {
+      "type": "boolean",
+      "default": false,
+      "description": "Output valid machine-readable JSON."
+    },
+    "--help": {
+      "type": "boolean",
+      "description": "Show help."
+    },
+    "--version": {
+      "type": "boolean",
+      "description": "Show tool version."
+    }
+  },
+  "supported_extensions": [
+    ".txt"
+  ],
+  "dependencies": [
+    {
+      "name": "python",
+      "type": "system",
+      "version": "3.x",
+      "required": true
+    }
+  ],
+  "permissions": {
+    "can_read_files": true,
+    "can_write_files": false,
+    "can_delete_files": false,
+    "can_overwrite_files": false,
+    "can_access_network": false,
+    "can_execute_shell": false,
+    "allowed_paths": [
+      "."
+    ]
+  },
+  "safety": {
+    "can_read_files": true,
+    "can_write_files": false,
+    "can_delete_files": false,
+    "can_overwrite_files": false,
+    "requires_force_to_overwrite": false,
+    "supports_dry_run": false,
+    "can_access_network": false,
+    "can_execute_shell": false,
+    "notes": "Read-only counting tool. It only reads input files and prints counts."
+  },
+  "batch": {
+    "supports_single_file": true,
+    "supports_folder": true,
+    "supports_recursive": true,
+    "default_extension_filter": ".txt"
+  },
+  "tags": [
+    "text",
+    "count",
+    "words",
+    "characters",
+    "lines",
+    "read-only"
+  ],
+  "examples": [
+    {
+      "description": "Count a text file",
+      "command": "text-count.bat examples\\input.txt"
+    },
+    {
+      "description": "Count a text file and output JSON",
+      "command": "text-count.bat examples\\input.txt --json"
+    },
+    {
+      "description": "Count direct text",
+      "command": "text-count.bat --text \"hola mundo\""
+    }
+  ]
+}

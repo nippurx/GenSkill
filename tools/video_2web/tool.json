@@ -1,0 +1,141 @@
+{
+  "id": "video_2web",
+  "name": "video-2web",
+  "version": "1.0.0",
+  "type": "bat",
+  "language": "batch",
+  "status": "experimental",
+  "risk_level": "medium",
+  "category": "video",
+  "description": "Compresses local videos for web delivery with FFmpeg, preserving aspect ratio and keeping the original resolution unless --max-width is used.",
+  "entrypoint": "video-2web.bat",
+  "created_by": "GenSkill",
+  "license": "MIT",
+  "usage": [
+    "video-2web.bat video.mp4",
+    "video-2web.bat video.mp4 --quality 26",
+    "video-2web.bat video.mp4 --max-width 1280",
+    "video-2web.bat video.mp4 --output salida_web.mp4",
+    "video-2web.bat --all",
+    "video-2web.bat --all \"C:\\Videos\"",
+    "video-2web.bat --all \"C:\\Videos\" --max-width 1280 --quality 28",
+    "video-2web.bat --all \"C:\\Videos\" --dry-run"
+  ],
+  "inputs": {
+    "input_path": {
+      "type": "file_or_folder",
+      "required": false,
+      "description": "Video file in single-file mode, or folder when used with --all. Defaults to current folder for --all."
+    }
+  },
+  "outputs": {
+    "video_file": {
+      "type": "file",
+      "format": "mp4",
+      "description": "Web-optimized MP4 copy using the _web suffix by default."
+    },
+    "stdout": {
+      "type": "text",
+      "description": "Human-readable status, dry-run command, or error message."
+    }
+  },
+  "parameters": {
+    "--help": {
+      "type": "boolean",
+      "description": "Show help."
+    },
+    "--version": {
+      "type": "boolean",
+      "description": "Show tool version."
+    },
+    "--quality": {
+      "type": "integer",
+      "default": 28,
+      "description": "FFmpeg CRF value. Lower values produce better quality and larger files."
+    },
+    "--max-width": {
+      "type": "integer",
+      "required": false,
+      "description": "Maximum output width in pixels. Videos are only downscaled when wider than this value."
+    },
+    "--output": {
+      "type": "string",
+      "required": false,
+      "description": "Output .mp4 file path in single-file mode, or existing output folder in --all mode."
+    },
+    "--force": {
+      "type": "boolean",
+      "default": false,
+      "description": "Overwrite output files when they already exist."
+    },
+    "--all": {
+      "type": "boolean",
+      "default": false,
+      "description": "Process all supported videos in a folder."
+    },
+    "--recursive": {
+      "type": "boolean",
+      "default": false,
+      "description": "Include subfolders when using --all."
+    },
+    "--dry-run": {
+      "type": "boolean",
+      "default": false,
+      "description": "Preview FFmpeg commands without writing files."
+    }
+  },
+  "supported_extensions": [".mp4", ".mov", ".mkv", ".avi", ".webm"],
+  "dependencies": [
+    {
+      "name": "FFmpeg",
+      "type": "system",
+      "required": true,
+      "check_command": "ffmpeg -version",
+      "install_notes": "Install FFmpeg for Windows and add the bin folder to PATH."
+    }
+  ],
+  "permissions": {
+    "can_read_files": true,
+    "can_write_files": true,
+    "can_delete_files": false,
+    "can_overwrite_files": true,
+    "can_access_network": false,
+    "can_execute_shell": true,
+    "allowed_paths": ["."]
+  },
+  "safety": {
+    "can_read_files": true,
+    "can_write_files": true,
+    "can_delete_files": false,
+    "can_overwrite_files": true,
+    "requires_force_to_overwrite": true,
+    "supports_dry_run": true,
+    "can_access_network": false,
+    "notes": "Creates optimized MP4 copies only. It never deletes or modifies original videos."
+  },
+  "batch": {
+    "supports_single_file": true,
+    "supports_folder": true,
+    "supports_recursive": true,
+    "default_extension_filter": ".mp4,.mov,.mkv,.avi,.webm"
+  },
+  "examples": [
+    {
+      "description": "Optimize one video with default settings",
+      "command": "video-2web.bat video.mp4"
+    },
+    {
+      "description": "Optimize one video with higher quality",
+      "command": "video-2web.bat video.mp4 --quality 26"
+    },
+    {
+      "description": "Only downscale videos wider than 1280 px",
+      "command": "video-2web.bat video.mp4 --max-width 1280"
+    },
+    {
+      "description": "Preview folder processing without writing files",
+      "command": "video-2web.bat --all \"C:\\Videos\" --dry-run"
+    }
+  ],
+  "tags": ["video", "ffmpeg", "mp4", "web", "compression", "h264", "aac"]
+}

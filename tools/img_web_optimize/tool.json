@@ -1,0 +1,145 @@
+{
+  "id": "img_web_optimize",
+  "name": "img-web",
+  "version": "1.0.0",
+  "type": "bat",
+  "language": "batch_python",
+  "status": "experimental",
+  "risk_level": "low",
+  "category": "images",
+  "description": "Optimizes local images for web by resizing large images and exporting compressed WebP or JPG copies.",
+  "entrypoint": "img-web.bat",
+  "python_entrypoint": "img_web_optimize.py",
+  "created_by": "GenSkill",
+  "license": "MIT",
+  "usage": [
+    "img-web.bat imagen.jpg",
+    "img-web.bat imagen.png --quality 70",
+    "img-web.bat imagen.jpg --max-size 1600",
+    "img-web.bat imagen.jpg --format jpg",
+    "img-web.bat --all",
+    "img-web.bat --all \"C:\\imagenes\"",
+    "img-web.bat --all \"C:\\imagenes\" --output \"C:\\imagenes_web\"",
+    "img-web.bat --all --dry-run"
+  ],
+  "inputs": {
+    "input_path": {
+      "type": "file_or_folder",
+      "required": false,
+      "description": "Image file in single mode, or folder when used with --all. Defaults to current folder for --all."
+    }
+  },
+  "outputs": {
+    "image_file": {
+      "type": "file",
+      "description": "Optimized image copy using the _web suffix."
+    },
+    "stdout": {
+      "type": "text_or_json",
+      "description": "Human summary or valid JSON result."
+    }
+  },
+  "parameters": {
+    "--all": {
+      "type": "boolean",
+      "default": false,
+      "description": "Process all supported images in a folder."
+    },
+    "--output": {
+      "type": "string",
+      "required": false,
+      "description": "Output folder. Defaults to the same directory as each input image."
+    },
+    "--format": {
+      "type": "string",
+      "default": "webp",
+      "allowed": ["webp", "jpg"],
+      "description": "Output image format."
+    },
+    "--quality": {
+      "type": "integer",
+      "default": 75,
+      "description": "Compression quality from 1 to 100."
+    },
+    "--max-size": {
+      "type": "integer",
+      "default": 1200,
+      "description": "Maximum longest side in pixels. Smaller images are not enlarged."
+    },
+    "--force": {
+      "type": "boolean",
+      "default": false,
+      "description": "Overwrite output files when they already exist."
+    },
+    "--dry-run": {
+      "type": "boolean",
+      "default": false,
+      "description": "Preview output paths and dimensions without writing files."
+    },
+    "--json": {
+      "type": "boolean",
+      "default": false,
+      "description": "Output valid machine-readable JSON."
+    },
+    "--help": {
+      "type": "boolean",
+      "description": "Show help."
+    }
+  },
+  "supported_extensions": [".jpg", ".jpeg", ".png", ".webp"],
+  "dependencies": [
+    {
+      "name": "python",
+      "type": "system",
+      "version": "3.x",
+      "required": true
+    },
+    {
+      "name": "Pillow",
+      "type": "python_package",
+      "install": "pip install pillow",
+      "required": true
+    }
+  ],
+  "permissions": {
+    "can_read_files": true,
+    "can_write_files": true,
+    "can_delete_files": false,
+    "can_overwrite_files": true,
+    "can_access_network": false,
+    "can_execute_shell": false,
+    "allowed_paths": ["."]
+  },
+  "safety": {
+    "can_read_files": true,
+    "can_write_files": true,
+    "can_delete_files": false,
+    "can_overwrite_files": true,
+    "requires_force_to_overwrite": true,
+    "supports_dry_run": true,
+    "can_access_network": false,
+    "can_execute_shell": false,
+    "notes": "Creates optimized copies only. It never deletes or modifies original images."
+  },
+  "batch": {
+    "supports_single_file": true,
+    "supports_folder": true,
+    "supports_recursive": false,
+    "default_extension_filter": ".jpg,.jpeg,.png,.webp"
+  },
+  "tags": ["image", "webp", "jpg", "optimize", "resize", "compression", "web"],
+  "examples": [
+    {
+      "description": "Optimize one image to WebP",
+      "command": "img-web.bat foto.jpg"
+    },
+    {
+      "description": "Optimize a folder without writing files",
+      "command": "img-web.bat --all \"C:\\imagenes\" --dry-run"
+    },
+    {
+      "description": "Optimize as JPG with a larger maximum size",
+      "command": "img-web.bat foto.png --format jpg --max-size 1600"
+    }
+  ]
+}
