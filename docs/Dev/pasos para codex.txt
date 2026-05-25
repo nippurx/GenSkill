@@ -1,0 +1,471 @@
+quiero hacer que codex openai  se encargue de generar el proyecto GenSkill
+cuales serian los pasos?
+
+---
+
+Sí. Yo lo haría como **proyecto dirigido por Codex**, pero no le pediría “creame GenSkill completo”. Le daría **tareas chicas, con tests, commits y entregables**.
+
+Codex puede leer, modificar y ejecutar código; también puede trabajar localmente desde la CLI, en VS Code o delegar tareas a Codex Cloud. ([OpenAI Developers][1]) Además, OpenAI recomienda usarlo con checkpoints/commits y validación frecuente. ([OpenAI Developers][2])
+
+## Enfoque correcto
+
+GenSkill no debería empezar como “agente universal”. La idea base que venimos definiendo es: **convertir tareas repetidas en skills reutilizables**, no gastar tokens generando scripts cada vez. El roadmap previo ya marca que primero conviene crear formato de skill, runner, logs, skills manuales, buscador, planner IA y recién después generación automática de nuevas skills. 
+
+La regla sería:
+
+```txt
+Codex no decide el producto.
+Codex implementa tickets concretos.
+Vos decidís arquitectura, alcance y prioridades.
+```
+
+---
+
+# Pasos para que Codex genere GenSkill
+
+## 1. Crear el repositorio base
+
+Primero armá un repo vacío:
+
+```bash
+mkdir genskill
+cd genskill
+git init
+```
+
+Estructura inicial sugerida:
+
+```txt
+GenSkill/
+│
+├── skills/
+├── workflows/
+├── core/
+├── data/
+├── tests/
+├── docs/
+├── pyproject.toml
+├── README.md
+└── GENSKILL_SPEC.md
+```
+
+El archivo más importante al principio sería:
+
+```txt
+GENSKILL_SPEC.md
+```
+
+Ahí ponés la visión del proyecto, el MVP y las reglas que Codex no debe romper.
+
+---
+
+## 2. Crear un documento maestro para Codex
+
+Antes de pedirle código, dale contexto fijo.
+
+Archivo:
+
+```txt
+GENSKILL_SPEC.md
+```
+
+Contenido recomendado:
+
+```md
+# GenSkill
+
+GenSkill es un sistema local de automatización basado en skills reutilizables.
+
+Objetivo:
+Evitar que una IA genere código desde cero para tareas repetidas. GenSkill debe buscar skills existentes, ejecutarlas, medir resultados y, en fases futuras, crear nuevas skills cuando no existan.
+
+Principios:
+- Primero runner y skills reutilizables.
+- No empezar como agente universal de PC.
+- Todo debe ser testeable.
+- Toda skill debe tener metadata.
+- Toda ejecución debe generar logs.
+- Ninguna skill debe borrar o sobrescribir archivos sin permiso explícito.
+- El sistema debe funcionar primero sin IA.
+
+MVP 1:
+- CLI funcional.
+- Registro de skills.
+- Ejecución de skills.
+- Validación básica de parámetros.
+- Logs de ejecución.
+- 5 skills iniciales.
+- Tests con pytest.
+
+Stack:
+- Python
+- Typer
+- Pydantic
+- SQLite
+- pytest
+
+Estructura de skill:
+skills/{skill_id}/
+  skill.json
+  run.py
+  tests/
+
+Estados de skill:
+- draft
+- experimental
+- stable
+- deprecated
+- dangerous
+```
+
+Esto le da a Codex una “constitución” del proyecto.
+
+---
+
+## 3. Instalar Codex en el entorno de trabajo
+
+Podés usar **Codex CLI** localmente o la extensión de VS Code. La CLI de Codex se ejecuta desde tu terminal y puede leer, cambiar y ejecutar código dentro del directorio elegido. ([OpenAI Developers][1])
+
+Ejemplo conceptual:
+
+```bash
+npm install -g @openai/codex
+cd genskill
+codex
+```
+
+Luego trabajás con prompts puntuales.
+
+---
+
+## 4. Primer prompt para Codex: solo esqueleto del proyecto
+
+No le pidas IA, planner ni UI todavía.
+
+Prompt:
+
+```txt
+Leé GENSKILL_SPEC.md y creá el esqueleto inicial del proyecto GenSkill.
+
+Objetivo de esta tarea:
+- Crear estructura de carpetas.
+- Configurar pyproject.toml.
+- Agregar dependencias: typer, pydantic, pytest.
+- Crear README.md inicial.
+- Crear paquete Python llamado genskill.
+- Crear comando CLI básico: genskill --help.
+- Agregar test mínimo que verifique que la CLI existe.
+
+Restricciones:
+- No implementar planner IA.
+- No implementar búsqueda semántica.
+- No crear UI.
+- No crear skills todavía.
+- Hacer cambios pequeños y testeables.
+- Al final indicá qué comandos correr para probar.
+```
+
+Resultado esperado:
+
+```bash
+pytest
+genskill --help
+```
+
+---
+
+## 5. Segundo ticket: formato de skill
+
+Prompt:
+
+```txt
+Implementá el modelo de metadata de una skill.
+
+Objetivo:
+- Crear un modelo Pydantic SkillMetadata.
+- Debe leer un archivo skill.json.
+- Debe validar:
+  - id
+  - name
+  - description
+  - category
+  - inputs
+  - outputs
+  - tags
+  - risk_level
+  - entrypoint
+  - status
+  - permissions
+- Agregar tests para skill.json válido e inválido.
+
+No implementar ejecución todavía.
+No implementar IA.
+```
+
+Esto convierte GenSkill en algo más que una carpeta de scripts: empieza a tener **skills formalizadas**.
+
+---
+
+## 6. Tercer ticket: registry de skills
+
+Prompt:
+
+```txt
+Implementá el SkillRegistry.
+
+Objetivo:
+- Escanear la carpeta skills/.
+- Detectar subcarpetas con skill.json.
+- Cargar metadata.
+- Ignorar skills inválidas pero registrar el error.
+- Exponer métodos:
+  - list_skills()
+  - get_skill(skill_id)
+  - find_by_tag(tag)
+  - find_by_category(category)
+
+Agregar tests con skills falsas dentro de una carpeta temporal.
+No ejecutar scripts todavía.
+```
+
+Acá ya tenés el catálogo.
+
+---
+
+## 7. Cuarto ticket: runner
+
+Prompt:
+
+```txt
+Implementá el SkillRunner.
+
+Objetivo:
+- Recibir skill_id y parámetros.
+- Buscar la skill en SkillRegistry.
+- Validar que el entrypoint existe.
+- Ejecutar run.py como subprocess.
+- Pasar parámetros en JSON por stdin.
+- Recibir respuesta JSON por stdout.
+- Capturar errores.
+- Devolver un objeto RunResult con:
+  - success
+  - skill_id
+  - started_at
+  - finished_at
+  - duration_ms
+  - output
+  - error
+
+Restricciones de seguridad:
+- Ejecutar solo skills dentro de la carpeta skills.
+- No permitir rutas fuera del proyecto para entrypoint.
+- Agregar timeout configurable.
+- Agregar tests.
+```
+
+Este es el corazón de GenSkill. Sin runner confiable, todo lo demás es humo.
+
+---
+
+## 8. Quinto ticket: primera skill real
+
+Prompt:
+
+```txt
+Creá la primera skill real: text_count_words.
+
+Ubicación:
+skills/text_count_words/
+
+Debe incluir:
+- skill.json
+- run.py
+- tests/
+
+Función:
+- Recibe input_text como string.
+- Devuelve word_count, char_count y line_count.
+
+Debe poder ejecutarse desde el SkillRunner.
+Agregar test end-to-end usando el runner.
+```
+
+Primero una skill simple. Nada de imágenes, PDFs ni web todavía.
+
+---
+
+## 9. Sexto ticket: CLI real
+
+Prompt:
+
+```txt
+Conectá el CLI con SkillRegistry y SkillRunner.
+
+Comandos requeridos:
+- genskill skills list
+- genskill skills show <skill_id>
+- genskill run <skill_id> --params '{"input_text":"hola mundo"}'
+
+La salida debe ser JSON legible.
+Agregar tests de CLI.
+```
+
+Con esto ya tenés un MVP mínimo:
+
+```bash
+genskill skills list
+genskill run text_count_words --params "{\"input_text\":\"hola mundo\"}"
+```
+
+---
+
+## 10. Séptimo ticket: logs
+
+Prompt:
+
+```txt
+Agregá logging persistente de ejecuciones.
+
+Objetivo:
+- Guardar cada ejecución en data/logs/runs.jsonl.
+- Cada línea debe incluir:
+  - run_id
+  - skill_id
+  - params_hash
+  - success
+  - duration_ms
+  - error
+  - timestamp
+
+Agregar comando:
+- genskill runs list
+- genskill runs show <run_id>
+
+No guardar parámetros completos si pueden contener datos sensibles; guardar hash y output resumido.
+Agregar tests.
+```
+
+Esto empieza a darle memoria operativa.
+
+---
+
+# Orden de construcción recomendado
+
+Yo lo dividiría así:
+
+```txt
+Sprint 1 — Base
+1. Esqueleto del proyecto
+2. Modelo SkillMetadata
+3. SkillRegistry
+4. SkillRunner
+5. CLI básica
+
+Sprint 2 — Skills iniciales
+6. text_count_words
+7. clean_text
+8. merge_text_files
+9. csv_to_json
+10. json_to_csv
+
+Sprint 3 — Seguridad y logs
+11. logs jsonl
+12. permisos por skill
+13. sandbox folder
+14. backups antes de sobrescribir
+
+Sprint 4 — Búsqueda
+15. búsqueda por nombre
+16. búsqueda por tags
+17. ranking simple
+18. comando genskill find "quiero contar palabras"
+
+Sprint 5 — Planner IA
+19. integrar OpenAI API
+20. que el planner sugiera skills existentes
+21. que NO genere código todavía
+22. que arme workflows simples
+
+Sprint 6 — Skill Generator
+23. generar nueva skill si no existe
+24. generar tests
+25. ejecutarla en sandbox
+26. marcarla como experimental
+```
+
+---
+
+# Cómo usar Codex sin que rompa todo
+
+La dinámica ideal:
+
+```txt
+1 ticket = 1 prompt
+1 prompt = 1 cambio chico
+1 cambio chico = tests
+tests pasan = commit
+```
+
+Ejemplo:
+
+```bash
+git status
+pytest
+git add .
+git commit -m "Add skill metadata model"
+```
+
+No le des 20 tareas juntas. Codex rinde mejor cuando puede cerrar una unidad clara.
+
+---
+
+# Prompt permanente para cada tarea
+
+Podés pegar esto al principio de cada pedido:
+
+```txt
+Antes de modificar código:
+1. Leé GENSKILL_SPEC.md.
+2. Revisá la estructura actual.
+3. Proponé brevemente los archivos que vas a tocar.
+4. Implementá el cambio mínimo necesario.
+5. Agregá o actualizá tests.
+6. Corré los tests si es posible.
+7. No agregues features no pedidas.
+8. No cambies arquitectura sin justificarlo.
+```
+
+---
+
+# Mi recomendación concreta
+
+Arrancá con este primer pedido a Codex:
+
+```txt
+Leé GENSKILL_SPEC.md y creá el MVP 1 de GenSkill hasta donde sea razonable en este primer cambio.
+
+Alcance exacto:
+- Proyecto Python instalable.
+- CLI con Typer.
+- Modelo SkillMetadata con Pydantic.
+- SkillRegistry que cargue skills desde /skills.
+- Una skill de ejemplo: text_count_words.
+- Tests con pytest.
+- README con instrucciones de uso.
+
+No implementar:
+- OpenAI API.
+- Planner IA.
+- Generador automático de skills.
+- UI web.
+- búsqueda semántica.
+- Docker.
+
+Prioridad:
+Código simple, claro, testeable y extensible.
+```
+
+Ese sería el primer gran paso. Después, cuando eso funcione, recién le pedís el runner avanzado, logs, permisos, búsqueda y planner.
+
+[1]: https://developers.openai.com/codex/cli?utm_source=chatgpt.com "Codex CLI"
+[2]: https://developers.openai.com/codex/quickstart?utm_source=chatgpt.com "Quickstart – Codex"

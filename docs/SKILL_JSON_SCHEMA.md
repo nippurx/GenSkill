@@ -1,0 +1,1 @@
+# Skill JSON Schema

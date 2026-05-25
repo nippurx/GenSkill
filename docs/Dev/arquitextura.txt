@@ -1,0 +1,65 @@
+Que sería más óptimo para gastar menos recursos
+Un python o pwa como app de entrada que llame a los skills almacenados o un superprompt en un agente como codex o Claude code?
+---
+
+Más óptimo para gastar menos recursos:
+
+**Una app de entrada liviana —Python/CLI primero, PWA después— que busque y ejecute skills almacenadas.**
+
+El **superprompt en Codex/Claude Code** sirve para crear o mejorar skills, pero no debería ser el motor diario.
+
+La arquitectura ideal sería:
+
+```txt
+Usuario
+↓
+App GenSkill
+↓
+Buscador de skills
+↓
+Runner local
+↓
+Ejecuta Python existente
+↓
+Solo llama a IA si no existe la skill
+```
+
+Comparación rápida:
+
+```txt
+Python/PWA + skills:
+- Bajo costo
+- Reutilizable
+- Rápido
+- Controlable
+- Escalable
+- Menos tokens
+
+Superprompt en agente:
+- Más flexible
+- Más caro
+- Repite razonamiento
+- Puede rehacer código ya resuelto
+- Menos predecible
+```
+
+Mi recomendación:
+
+```txt
+MVP 1:
+Python CLI + carpeta de skills + skill.json + runner
+
+MVP 2:
+API local con FastAPI
+
+MVP 3:
+PWA como interfaz visual
+
+MVP 4:
+LLM planner solo para elegir skills
+
+MVP 5:
+Codex/Claude Code solo para generar skills faltantes
+```
+
+La clave de GenSkill es justamente esta: no usar IA cara para resolver cada vez, sino convertir esas soluciones en capacidades permanentes. En tu roadmap ya estaba muy bien planteado: GenSkill busca si existe una skill, la ejecuta, y solo si no existe usa IA para crearla, guardarla y reutilizarla después. 
