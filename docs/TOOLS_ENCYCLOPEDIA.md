@@ -216,3 +216,72 @@ Use this tool when an AI agent needs deterministic local video compression for w
 ### Related Tools
 
 - `img-web.bat`
+
+## video-cortar
+
+### Summary
+
+Cuts local videos to a requested duration using FFmpeg stream copy, without re-encoding.
+
+### Use Cases
+
+- Create an 18-minute preview or excerpt from a local video.
+- Cut a video quickly while preserving original stream quality.
+- Produce a trimmed MP4 copy without modifying the source file.
+
+### Usage
+
+```bat
+tools\video_trim\video-cortar.bat video.mp4
+tools\video_trim\video-cortar.bat video.mp4 --duration 00:05:00
+tools\video_trim\video-cortar.bat video.mp4 --output video_corte.mp4
+tools\video_trim\video-cortar.bat "C:\Videos\mi video.mp4" --output "C:\Videos\mi video_18min.mp4"
+```
+
+### Parameters
+
+| Parameter | Description |
+|---|---|
+| `video.mp4` | Input video for single-file mode. |
+| `--duration HH:MM:SS` | Trim duration. Default: `00:18:00`. |
+| `--output RUTA` | Output `.mp4` path. |
+| `--force` | Overwrite the output file if it already exists. |
+| `--help`, `-h`, `/?` | Show command help. |
+| `--version` | Show tool version. |
+
+### Inputs
+
+- `.mp4`
+- `.mov`
+- `.mkv`
+- `.avi`
+- `.webm`
+
+### Outputs
+
+Creates a trimmed `.mp4` copy with a duration suffix, for example `video_18min.mp4`.
+
+### Dependencies
+
+- FFmpeg available in PATH.
+
+### Safety
+
+- Does not delete original videos.
+- Does not modify original videos.
+- Does not overwrite outputs unless `--force` is used.
+- Refuses to use the input file itself as output.
+- Does not access the network.
+- Does not use AI.
+
+### Limitations
+
+Because it uses `-c copy`, trimming is fast and does not reduce quality, but cuts may not be exact to the frame when timestamps do not align with keyframes.
+
+### AI Notes
+
+Use this tool when an AI agent needs deterministic local video trimming without re-encoding. Do not use it for downloading media, AI processing, subtitles, or full video editing workflows.
+
+### Related Tools
+
+- `video-2web.bat`

@@ -1,0 +1,114 @@
+{
+  "id": "video_trim",
+  "name": "video-cortar",
+  "version": "1.0.0",
+  "type": "bat",
+  "language": "batch",
+  "status": "experimental",
+  "risk_level": "medium",
+  "category": "video",
+  "description": "Cuts local videos to a requested duration using FFmpeg stream copy without re-encoding.",
+  "entrypoint": "video-cortar.bat",
+  "created_by": "GenSkill",
+  "license": "MIT",
+  "usage": [
+    "video-cortar.bat video.mp4",
+    "video-cortar.bat video.mp4 --duration 00:05:00",
+    "video-cortar.bat video.mp4 --output video_corte.mp4",
+    "video-cortar.bat \"C:\\Videos\\mi video.mp4\" --duration 00:18:00 --output \"C:\\Videos\\mi video_18min.mp4\"",
+    "video-cortar.bat video.mp4 --force"
+  ],
+  "inputs": {
+    "input_path": {
+      "type": "file",
+      "required": true,
+      "description": "Local video file to trim."
+    }
+  },
+  "outputs": {
+    "video_file": {
+      "type": "file",
+      "format": "mp4",
+      "description": "Trimmed MP4 copy using a duration suffix by default, for example video_18min.mp4."
+    },
+    "stdout": {
+      "type": "text",
+      "description": "Human-readable status or error message."
+    }
+  },
+  "parameters": {
+    "--help": {
+      "type": "boolean",
+      "description": "Show help. Also available as -h and /?."
+    },
+    "--version": {
+      "type": "boolean",
+      "description": "Show tool version."
+    },
+    "--duration": {
+      "type": "string",
+      "default": "00:18:00",
+      "description": "Trim duration in HH:MM:SS format."
+    },
+    "--output": {
+      "type": "string",
+      "required": false,
+      "description": "Output .mp4 file path."
+    },
+    "--force": {
+      "type": "boolean",
+      "default": false,
+      "description": "Overwrite the output file when it already exists."
+    }
+  },
+  "supported_extensions": [".mp4", ".mov", ".mkv", ".avi", ".webm"],
+  "dependencies": [
+    {
+      "name": "FFmpeg",
+      "type": "system",
+      "required": true,
+      "check_command": "ffmpeg -version",
+      "install_notes": "Install FFmpeg for Windows and add the bin folder to PATH."
+    }
+  ],
+  "permissions": {
+    "can_read_files": true,
+    "can_write_files": true,
+    "can_delete_files": false,
+    "can_overwrite_files": true,
+    "can_access_network": false,
+    "can_execute_shell": true,
+    "allowed_paths": ["."]
+  },
+  "safety": {
+    "can_read_files": true,
+    "can_write_files": true,
+    "can_delete_files": false,
+    "can_overwrite_files": true,
+    "requires_force_to_overwrite": true,
+    "supports_dry_run": false,
+    "can_access_network": false,
+    "notes": "Creates trimmed copies only. It never deletes or modifies original videos and refuses to overwrite outputs unless --force is used."
+  },
+  "batch": {
+    "supports_single_file": true,
+    "supports_folder": false,
+    "supports_recursive": false,
+    "default_extension_filter": ".mp4,.mov,.mkv,.avi,.webm"
+  },
+  "examples": [
+    {
+      "description": "Cut one video to the default 18 minutes",
+      "command": "video-cortar.bat video.mp4"
+    },
+    {
+      "description": "Cut one video to five minutes",
+      "command": "video-cortar.bat video.mp4 --duration 00:05:00"
+    },
+    {
+      "description": "Choose an explicit output file",
+      "command": "video-cortar.bat video.mp4 --output video_corte.mp4"
+    }
+  ],
+  "tags": ["video", "ffmpeg", "trim", "cut", "mp4", "stream-copy", "no-reencode"]
+}
